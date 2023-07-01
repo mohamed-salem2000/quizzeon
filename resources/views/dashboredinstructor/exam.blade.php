@@ -1,0 +1,474 @@
+@extends('dashboredinstructor.instructorlayout')
+@section('content')
+<style>
+.remove-icon {
+    cursor: pointer;
+    color: red;
+    margin-left: 5px;
+}
+</style>
+<div class="content">
+    @if (session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+    <script>
+    setTimeout(function() {
+        document.getElementById('success-message').remove();
+    }, 2000);
+    </script>
+    @endif
+    <div class="card card-nav-tabs">
+        <h4 class="card-header card-header-info">Add Subject</h4>
+        <div class="card-body">
+            <p class="card-text">Here you can add your Exam to add exam to this subject .</p>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-sm">Add
+                Exam</button>
+        </div>
+    </div>
+    <div class="section">
+        @foreach ($exams as $exam)
+        <div class="card" style="width: 20rem;">
+            <img class="card-img-top" src="{{$exam->image}}" alt="Card image cap">
+            <div class="card-body">
+                <h4 class="card-title">{{$exam->exam_name}}</h4>
+                <p class="card-text">Date: {{$exam->date}}</p>
+                <p class="card-text">Time: {{$exam->time}} clock</p>
+                <button class="btn btn-primary btn-fab btn-icon btn-round" data-toggle="modal"
+                    data-target=".bd-example-modal-lg">
+                    <i class="tim-icons icon-paper" onclick="getexamId('{{ $exam->id }}','{{ $exam->exam_name }}')"></i>
+                </button>
+                <button type="button" rel="tooltip" class="btn btn-info btn-sm btn-icon" data-toggle="modal"
+                    data-target="#exampleModal" onclick="getexamId('{{ $exam->id  }}')">
+                    <i class="tim-icons icon-link-72"></i>
+                </button>
+                <button type="button" rel="tooltip" class="btn btn-success btn-sm btn-icon">
+                    <i class="tim-icons icon-settings"></i>
+                </button>
+                <button type="button" rel="tooltip" class="btn btn-danger btn-sm btn-icon">
+                    <i class="tim-icons icon-simple-remove"></i>
+                </button>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Note! you will delete a subject </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    <i class="tim-icons icon-simple-remove"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-body">
+                        <a id="examFormdestroy" href="{{ route('exam.show', [':exam']) }}">linke</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="card">
+                <div class="card-body">
+                    <h1>create a first step of exam</h1>
+                    <form action="{{ route('exam.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <i class="tim-icons icon-calendar-60"></i>
+                                </div>
+                            </div>
+                            <input type="date" class="form-control" placeholder="exam date" name="date">
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <i class="tim-icons icon-calendar-60"></i>
+                                </div>
+                            </div>
+                            <input type="number" class="form-control" name="hours" id="hoursInput" min="0" max="24">
+                            <input type="number" class="form-control" name="minutes" id="minutesInput" min="0" max="59">
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <i class="tim-icons icon-time-alarm"></i>
+                                </div>
+                            </div>
+                            <input type="time" class="form-control" placeholder="exam time" name="time">
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <i class="tim-icons icon-paper"></i>
+                                </div>
+                            </div>
+                            <input type="text" class="form-control" placeholder="exam name" name="name">
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <i class="tim-icons icon-paper"></i>
+                                </div>
+                            </div>
+                            <input type="password" class="form-control"
+                                placeholder="you cam enter exam password if you want" name="password">
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <i class="tim-icons icon-link-72"></i>
+                                </div>
+                            </div>
+                            <select class="form-control" id="exampleFormControlSelect1" name="selectedSubject">
+                                @foreach ($subjects as $subject)
+                                <option value="{{$subject->id}}">{{$subject->subject_name}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <i class="tim-icons icon-link-72"></i>
+                                </div>
+                            </div>
+                            <select class="form-control" id="exampleFormControlSelect2" name="selectedplane"
+                                onchange="togglePriceInput()">
+                                <option value="paid">paid</option>
+                                <option value="free">free</option>
+                            </select>
+
+                            <script>
+                            function togglePriceInput() {
+                                var selectElement = document.getElementById("exampleFormControlSelect2");
+                                var priceInput = document.getElementById("price");
+                                console.log(selectElement);
+                                // Check the selected value
+                                if (selectElement.value === "free") {
+                                    priceInput.disabled = true; // Disable the input
+                                } else {
+                                    priceInput.disabled = false; // Enable the input
+                                }
+                            }
+                            </script>
+
+                        </div>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="price" placeholder="Enter price" name="price">
+                        </div>
+                        <div class="input-group mb-3">
+                            <input type="file" class="form-control" id="image" placeholder="Enter email" name="image">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Primary</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="card">
+                <div class="card-body">
+                    <input type="text" class="form-control" id="examname" name="examname" disabled="">
+                    <form action="{{ route('addquestion') }}" method="POST" id="questionForm">
+                        @csrf
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputState">State</label>
+                                <select id="inputState" class="form-control" onchange="changeOptionType()"
+                                    name="selectoption">
+                                    <option selected value="1">single choice (radio button)</option>
+                                    <option value="2">multiple choice</option>
+                                    <option value="3">image choice</option>
+                                    <option value="4">matching choice</option>
+                                    <option value="5">fill the blank</option>
+                                    <option value="6">upload file</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="inputPassword4">exam description</label>
+                                <input type="text" class="form-control" id="examId" name="examid">
+                            </div>
+                        </div>
+                        <div class="container mt-4 mb-4">
+                            <div class="row justify-content-md-center">
+                                <div class="col-md-12 col-lg-8">
+                                    <label>Describe the issue in detail</label>
+                                    <div class="form-group">
+                                        <textarea id="editor" name="description"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="editor" class="mt-3" contenteditable="true"></div>
+                        <textarea id="editorOutput" name="content" class="d-none"></textarea>
+                        <div id="addOption">
+                            <input type="hidden" id="optionCount" name="optionCount" value="0">
+                        </div>
+                        <button type="button" class="btn btn-primary" id="addOptionBtn" onclick="addOption()">Add
+                            option</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Submit questions</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+</script>
+<script>
+function getexamId(examId, examname) {
+    $('#examId').val(examId);
+    $('#examname').val(examname);
+    var linkUrl = "{{ route('exam.show', [':exam']) }}";
+    linkUrl = linkUrl.replace(':exam', examId);
+    $('#examFormdestroy').attr('href', linkUrl);
+    $('#examIdIdInput').val(examId);
+}
+</script>
+<script>
+function changeOptionType() {
+    var select = document.getElementById("inputState");
+    var addOptionBtn = document.getElementById("addOptionBtn");
+    var selectedValue = select.options[select.selectedIndex].value;
+
+    if (selectedValue === "6") { // Check if "upload file" option is selected
+        addOptionBtn.style.display = "none"; // Hide the "Add option" button
+    } else {
+        addOptionBtn.style.display = "inline"; // Show the "Add option" button
+    }
+}
+</script>
+<script>
+tinymce.init({
+    selector: 'textarea#editor',
+    skin: 'bootstrap', //The TinyMCE Bootstrap skin
+    plugins: 'lists, link, image, media',
+    […]
+});
+</script>
+
+<script>
+tinymce.init({
+    selector: 'textarea#editor',
+    plugins: 'lists, link, image, media',
+    toolbar: 'h1 h2 bold italic strikethrough blockquote bullist numlist backcolor | link image media | removeformat help',
+    menubar: false,
+    setup: (editor) => {
+        // Apply the focus effect
+        editor.on("init", () => {
+            editor.getContainer().style.transition =
+                "border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out";
+        });
+        editor.on("focus", () => {
+            (editor.getContainer().style.boxShadow = "0 0 0 .2rem rgba(0, 123, 255, .25)"),
+            (editor.getContainer().style.borderColor = "#80bdff");
+        });
+        editor.on("blur", () => {
+            (editor.getContainer().style.boxShadow = ""),
+            (editor.getContainer().style.borderColor = "");
+        });
+    },
+});
+</script>
+<script>
+tinymce.init({
+    selector: 'textarea#editor',
+    skin: 'bootstrap',
+    plugins: 'lists, link, image, media',
+    toolbar: 'h1 h2 bold italic strikethrough blockquote bullist numlist backcolor | link image media | removeformat help',
+    menubar: false,
+});
+</script>
+
+<script>
+function addOption() {
+    var optionContainer = document.createElement('div');
+    optionContainer.classList.add('option-container');
+
+    var selectElement = document.getElementById('inputState');
+    var selectedValue = selectElement.options[selectElement.selectedIndex].value;
+
+    if (selectedValue == '4') {
+        var leftInputField = document.createElement('input');
+        leftInputField.setAttribute('type', 'text');
+        leftInputField.setAttribute('class', 'form-control option-input');
+        leftInputField.setAttribute('name', 'leftOption[]');
+        leftInputField.setAttribute('placeholder', 'Left Option');
+
+        var rightInputField = document.createElement('input');
+        rightInputField.setAttribute('type', 'text');
+        rightInputField.setAttribute('class', 'form-control option-input');
+        rightInputField.setAttribute('name', 'rightOption[]');
+        rightInputField.setAttribute('placeholder', 'Right Option');
+
+        optionContainer.appendChild(leftInputField);
+        optionContainer.appendChild(rightInputField);
+    } else {
+        var inputField = document.createElement('input');
+        if (selectedValue === '3') {
+            inputField.setAttribute('type', 'file');
+        } else {
+            inputField.setAttribute('type', 'text');
+        }
+        inputField.setAttribute('class', 'form-control option-input');
+        inputField.setAttribute('name', 'option[]');
+        inputField.setAttribute('placeholder', 'Option');
+
+        optionContainer.appendChild(inputField);
+
+        var checkbox = document.createElement('input');
+        checkbox.setAttribute('type', 'checkbox');
+        checkbox.setAttribute('class', 'option-checkbox');
+        checkbox.setAttribute('name', 'correct[]');
+
+        checkbox.onchange = function() {
+            var selectElement = document.getElementById('inputState');
+            var checkboxes = document.getElementsByClassName('option-checkbox');
+            var isMultipleChoice = (selectElement.value === '2');
+
+            if (isMultipleChoice) {
+                for (var i = 0; i < checkboxes.length; i++) {
+                    checkboxes[i].disabled = false; // Enable all checkboxes
+                }
+            } else {
+                for (var i = 0; i < checkboxes.length; i++) {
+                    if (checkboxes[i] !== this) {
+                        checkboxes[i].disabled = this.checked; // Disable other checkboxes
+                    }
+                }
+            }
+        };
+
+        optionContainer.appendChild(checkbox);
+        var optionInputs = document.getElementsByClassName('option-input');
+        var checkboxes = document.getElementsByClassName('option-checkbox');
+        for (var i = 0; i < optionInputs.length; i++) {
+            optionInputs[i].setAttribute('name', 'option[' + i + ']');
+            checkboxes[i].setAttribute('name', 'correct[' + i + ']');
+        }
+    }
+
+    var removeIcon = document.createElement('span');
+    removeIcon.setAttribute('class', 'remove-icon');
+    removeIcon.innerHTML = '&times;';
+    removeIcon.onclick = function() {
+        this.parentNode.remove();
+    };
+
+    optionContainer.appendChild(removeIcon);
+
+    var div = document.getElementById('addOption');
+    div.appendChild(optionContainer);
+    div.appendChild(document.createElement('br'));
+
+    // Increment and update option count
+    var optionCountInput = document.getElementById('optionCount');
+    var optionCount = parseInt(optionCountInput.value) + 1;
+    optionCountInput.value = optionCount;
+
+    // Assign names to option inputs and checkboxes
+
+}
+</script>
+
+
+</script>
+
+
+
+<footer class="footer">
+    <div class="container-fluid">
+        <ul class="nav">
+            <li class="nav-item">
+                <a href="javascript:void(0)" class=" nav-link">
+                    Creative Tim
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="javascript:void(0)" class="nav-link">
+                    About Us
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="javascript:void(0)" class="nav-link">
+                    Blog
+                </a>
+            </li>
+        </ul>
+        <div class="copyright">
+            ©
+            <script>
+            document.write(new Date().getFullYear())
+            </script>2018 made with <i class="tim-icons icon-heart-2"></i> by
+            <a href="javascript:void(0)" target="_blank">Creative Tim</a> for a better web.
+        </div>
+    </div>
+</footer>
+</div>
+</div>
+<div class="fixed-plugin">
+    <div class="dropdown show-dropdown">
+        <a href="#" data-toggle="dropdown">
+            <i class="fa fa-cog fa-2x"> </i>
+        </a>
+        <ul class="dropdown-menu">
+            <li class="header-title"> Sidebar Background</li>
+            <li class="adjustments-line">
+                <a href="javascript:void(0)" class="switch-trigger background-color">
+                    <div class="badge-colors text-center">
+                        <span class="badge filter badge-primary active" data-color="primary"></span>
+                        <span class="badge filter badge-info" data-color="blue"></span>
+                        <span class="badge filter badge-success" data-color="green"></span>
+                    </div>
+                    <div class="clearfix"></div>
+                </a>
+            </li>
+            <li class="adjustments-line text-center color-change">
+                <span class="color-label">LIGHT MODE</span>
+                <span class="badge light-badge mr-2"></span>
+                <span class="badge dark-badge ml-2"></span>
+                <span class="color-label">DARK MODE</span>
+            </li>
+            <li class="button-container">
+                <a href="https://www.creative-tim.com/product/black-dashboard" target="_blank"
+                    class="btn btn-primary btn-block btn-round">Download Now</a>
+                <a href="https://demos.creative-tim.com/black-dashboard/docs/1.0/getting-started/introduction.html"
+                    target="_blank" class="btn btn-default btn-block btn-round">
+                    Documentation
+                </a>
+            </li>
+            <li class="header-title">Thank you for 95 shares!</li>
+            <li class="button-container text-center">
+                <button id="twitter" class="btn btn-round btn-info"><i class="fab fa-twitter"></i> &middot; 45</button>
+                <button id="facebook" class="btn btn-round btn-info"><i class="fab fa-facebook-f"></i> &middot;
+                    50</button>
+                <br>
+                <br>
+                <a class="github-button" href="https://github.com/creativetimofficial/black-dashboard"
+                    data-icon="octicon-star" data-size="large" data-show-count="true"
+                    aria-label="Star ntkme/github-buttons on GitHub">Star</a>
+            </li>
+        </ul>
+    </div>
+</div>
+@endsection
